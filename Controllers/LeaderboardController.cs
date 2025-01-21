@@ -31,4 +31,53 @@ public class LeaderboardController : ControllerBase
 
         return CreatedAtAction(nameof(GetLeaderboardEntries), new { id = entry.Id }, entry);
     }
+
+    [HttpDelete("admin/{id}")]
+    public async Task<IActionResult> DeleteLeaderboardEntry(int id)
+    {
+        var entry = await _context.LeaderboardEntries.FindAsync(id);
+        if (entry == null)
+        {
+            return NotFound();
+        }
+
+        _context.LeaderboardEntries.Remove(entry);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpPut("admin/{id}")]
+    public async Task<IActionResult> PutLeaderboardEntry(int id, LeaderboardEntry entry)
+    {
+        if (id != entry.Id)
+        {
+            return BadRequest();
+        }
+
+        _context.Entry(entry).State = EntityState.Modified;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!LeaderboardEntryExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+    }
+
+    private bool LeaderboardEntryExists(int id)
+    {
+        return _context.LeaderboardEntries.Any(e => e.Id == id);
+    }
 }
